@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>شبِ سایه‌ها | مافیای سه‌بعدی</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<style>
+:root{
+  --ink:#0b0910; --wine:#8e2a3a; --wine2:#5b1623; --lamp:#e2a94b;
+  --moon:#8da2e0; --paper:#efe4cf; --bone:#b8ab93;
+  color-scheme: dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--paper);
+  font-family:'Vazirmatn','Vazir',Tahoma,'Segoe UI',system-ui,sans-serif;overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+button{font-family:inherit}
+
+#hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 0;pointer-events:none;z-index:5}
+#hud > *{pointer-events:auto}
+.chip{background:rgba(11,9,16,.72);border:1px solid rgba(226,169,75,.35);border-radius:999px;padding:5px 14px;
+  font-weight:700;font-size:14px;backdrop-filter:blur(6px);color:var(--lamp)}
+.chip[data-night="1"]{color:var(--moon);border-color:rgba(141,162,224,.4)}
+.chip.btnlike{font-weight:600;color:var(--paper);cursor:pointer}
+.chip.btnlike:focus-visible{outline:2px solid var(--moon)}
+#hud .grp{display:flex;gap:8px}
+
+#labels{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.tag{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;
+  background:rgba(11,9,16,.74);border:1px solid rgba(226,169,75,.32);border-radius:999px;
+  padding:1px 10px;font-size:12.5px;white-space:nowrap;display:flex;gap:6px;align-items:center;
+  backdrop-filter:blur(4px);transition:border-color .2s,background .2s}
+.tag.sel{border-color:var(--lamp);background:rgba(60,38,10,.85)}
+.tag.gone{opacity:.55;text-decoration:line-through}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot.m{background:#e0475c}.dot.c{background:#58c47e}.dot.u{background:#9a9a9a}
+
+#sheet{position:fixed;left:0;right:0;bottom:0;max-height:44vh;overflow:auto;display:none;z-index:6;
+  padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgba(9,7,13,.98) 72%,rgba(9,7,13,.86));
+  border-top:1px solid rgba(226,169,75,.3);line-height:1.95;font-size:15px}
+#sheet.on{display:block}
+.msg p{margin:0 0 .55em}
+.msg b{color:var(--lamp);font-weight:700}
+.dim{color:var(--bone)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{font-weight:600;font-size:15px;min-height:44px;padding:0 16px;border-radius:10px;cursor:pointer;
+  border:1px solid rgba(239,228,207,.28);background:rgba(239,228,207,.06);color:var(--paper);flex:1 1 auto}
+.btn.primary{background:var(--lamp);color:#1a1006;border-color:var(--lamp)}
+.btn.danger{background:var(--wine);border-color:var(--wine)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.cd:focus-visible{outline:2px solid var(--moon);outline-offset:2px}
+.chipf{display:inline-block;padding:0 10px;border-radius:999px;background:rgba(239,228,207,.09);font-size:12.5px;margin:2px 0 2px 4px;line-height:1.9}
+.say{border-inline-start:3px solid var(--lamp);padding:2px 12px;margin:.5em 0}
+.cue{color:var(--bone);font-size:13.5px;margin:0}
+.badge{font-size:12px;padding:0 8px;border-radius:999px;margin-inline-start:6px}
+.badge.m{background:rgba(224,71,92,.2);color:#ff8d9c}
+.badge.c{background:rgba(88,196,126,.18);color:#8fe3ad}
+.badge.u{background:rgba(160,160,160,.2);color:#cfcfcf}
+.badge.x{background:rgba(160,160,160,.2);color:#cfcfcf}
+
+#modal{position:fixed;inset:0;z-index:9;display:none;place-items:center;padding:14px;
+  background:rgba(5,4,8,.88);backdrop-filter:blur(5px)}
+#modal.on{display:grid}
+#modal .card{width:100%;max-width:470px;max-height:86vh;overflow:auto;background:#15111c;
+  border:1px solid rgba(226,169,75,.3);border-radius:14px;padding:18px;line-height:1.9}
+.card h3{margin:0 0 6px;font-size:19px;color:var(--lamp)}
+.card h4{margin:14px 0 4px;font-size:15px;color:var(--moon)}
+.card ol{margin:0;padding-inline-start:20px}
+.card ul{margin:6px 0;padding-inline-start:20px}
+.guest{padding:8px 0;border-top:1px solid rgba(239,228,207,.1)}
+.guest.gone{opacity:.55}
+.note{font-size:13.5px;color:var(--bone);padding-inline-start:10px;border-inline-start:2px solid rgba(239,228,207,.2);margin-top:3px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.opts .btn{font-size:19px;min-height:54px}
+.seq{font-size:26px;font-weight:800;text-align:center;direction:ltr;letter-spacing:.05em;color:var(--paper);margin:14px 0 4px}
+.candles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 4px}
+.cd{height:84px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:color-mix(in srgb,var(--c) 28%,#120e16);cursor:pointer;transition:background .12s,box-shadow .12s}
+.cd.lit{background:var(--c);box-shadow:0 0 26px var(--c)}
+
+#intro{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:24px 22px calc(26px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgba(8,6,12,.97) 38%,rgba(8,6,12,.35) 75%,rgba(8,6,12,.1))}
+#intro.off{display:none}
+#intro h1{font-size:clamp(46px,15vw,92px);line-height:1.15;margin:0 0 6px;font-weight:900;color:var(--paper);
+  text-shadow:0 0 34px rgba(226,169,75,.45);animation:rise 1.6s ease-out both}
+#intro .sub{font-size:18px;color:var(--lamp);font-weight:700;margin:0 0 10px}
+#intro p{max-width:34em;margin:0 0 18px;line-height:2;color:var(--bone)}
+@keyframes rise{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:blur(0)}}
+
+#end{position:fixed;inset:0;z-index:10;display:none;place-items:center;padding:14px;background:rgba(5,4,8,.82);backdrop-filter:blur(4px)}
+#end.on{display:grid}
+#end .card{width:100%;max-width:470px;max-height:90vh;overflow:auto;background:#15111c;border:1px solid rgba(226,169,75,.35);border-radius:14px;padding:20px;line-height:1.9}
+#end h2{margin:0 0 4px;font-size:30px}
+#end h2.win{color:#8fe3ad}#end h2.lose{color:#ff8d9c}
+#flash{position:fixed;inset:0;background:#dbe3ff;opacity:0;pointer-events:none;z-index:7}
+#flash.go{animation:fl .9s ease-out}
+@keyframes fl{0%{opacity:.85}12%{opacity:.1}22%{opacity:.6}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#intro h1{animation:none}#flash.go{animation:none}}
+
+#bubbles{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.bub{position:absolute;transform:translate(-50%,-100%);max-width:230px;background:#efe4cf;color:#1a1006;
+  border-radius:14px;padding:7px 12px;font-size:13px;line-height:1.7;box-shadow:0 6px 22px rgba(0,0,0,.5);animation:pop .22s ease-out}
+.bub::after{content:"";position:absolute;bottom:-6px;left:50%;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#efe4cf}
+@keyframes pop{from{opacity:0;transform:translate(-50%,-92%) scale(.92)}to{opacity:1;transform:translate(-50%,-100%) scale(1)}}
+.btn.ghost{width:100%;flex:1 1 100%;background:transparent}
+.btn.link{display:flex;align-items:center;justify-content:center;text-decoration:none}
+@media (prefers-reduced-motion:reduce){.bub{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="صحنه سه‌بعدی میز مافیا"></canvas>
+<div id="labels"></div>
+<div id="bubbles"></div>
+<div id="hud">
+  <div class="grp"><span class="chip" id="phaseChip" data-night="1">آماده</span><span class="chip" id="roleChip">کارآگاه</span></div>
+  <button class="chip btnlike" id="nbBtn" type="button">دفترچه</button>
+</div>
+<div id="sheet" aria-live="polite"></div>
+<div id="modal"></div>
+<div id="flash"></div>
+<div id="end"></div>
+
+<div id="intro">
+  <div class="sub">بازی معمایی مافیا</div>
+  <h1>شبِ سایه‌ها</h1>
+  <p>طوفان راهِ عمارت را بسته است. هشت نفر دور یک میز نشسته‌اند و دو نفرشان قاتل‌اند. تو کارآگاهی؛ تنها کسی که شب‌ها می‌تواند پروندهٔ یکی را باز کند و روزها از همه بازجویی می‌کند.</p>
+  <div class="row">
+    <button class="btn primary" id="startBtn" type="button">ورود به عمارت</button>
+    <button class="btn" id="howBtn" type="button">راهنمای بازی</button>
+  </div>
+  <div class="row">
+    <button class="btn ghost" id="creatorBtn" type="button">سازنده</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ==========================================================
+   ★ تنظیمات سازنده — فقط همین بخش را ویرایش کن ★
+   creatorText : متنی که با زدن دکمهٔ «سازنده» نمایش داده می‌شود.
+                 برای شروع پاراگراف جدید، یک خط خالی بگذار.
+   contactUrl  : لینک دکمهٔ «ارتباط با ما». نمونه‌ها:
+                 'https://t.me/your_id'  یا  'mailto:you@example.com'
+                 یا  'https://instagram.com/your_id'
+   ========================================================== */
+const CONFIG={
+  creatorText:`برای ارتباط با سازنده روی دکمه زیر کلیک کنید.`,
+  contactUrl:'https://abzarek.ir/service-p/msg/5772168'
+};
+/* ===================== پایان تنظیمات ===================== */
+const $ = s => document.querySelector(s);
+const FA = n => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const wpick = (items, wf) => { const ws=items.map(wf); let r=Math.random()*ws.reduce((a,b)=>a+b,0); for(let i=0;i<items.length;i++){ r-=ws[i]; if(r<=0) return items[i]; } return items[items.length-1]; };
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if(typeof THREE==='undefined'){
+  $('#intro').insertAdjacentHTML('afterbegin','<p style="color:#ff8d9c">بارگذاری موتور سه‌بعدی ناموفق بود. اتصال اینترنت را بررسی و صفحه را دوباره باز کنید.</p>');
+  return;
+}
+
+/* ============ داده‌ها ============ */
+const NAMES=['آرمان','بهار','کاوه','ملیکا','سیاوش','نگار','پرهام'];
+const FEMALE=new Set(['بهار','ملیکا','نگار']);
+const COATS=[{n:'قرمز',hex:0x8a2433},{n:'سبز',hex:0x2f5a43},{n:'آبی',hex:0x2f4670},{n:'خردلی',hex:0xa8832e}];
+const SKIN=[0xe8c3a0,0xd9a77f,0xb97f5a,0x8d5a3b,0xf0d2b6];
+const HAIR=[0x16100d,0x3a2416,0x6b4a2b,0x8b8b8b,0x2a1b14];
+const SCARFC=[0xd8cdb2,0x6a2a3a,0x35506b];
+const HATC=[0x1b1613,0x3b2a1a,0x2b2f3a];
+const TESTS=[
+  {id:'hat',pos:'کلاه بر سر داشت',neg:'کلاه نداشت',f:c=>c.feat.hat},
+  {id:'glasses',pos:'عینک زده بود',neg:'عینک نداشت',f:c=>c.feat.glasses},
+  {id:'scarf',pos:'شال‌گردن داشت',neg:'شال‌گردن نداشت',f:c=>c.feat.scarf},
+  {id:'tall',pos:'قدبلند بود',neg:'قدبلند نبود',f:c=>c.feat.tall},
+  ...COATS.map((co,i)=>({id:'coat'+i,pos:`پالتوی ${co.n} پوشیده بود`,neg:`پالتوی ${co.n} نپوشیده بود`,f:c=>c.feat.coat===i}))
+];
+const ROLE_FA={mafia:'مافیا',doctor:'دکتر',citizen:'شهروند'};
+
+const CUE_N=['عرق روی پیشانی‌اش نشسته.','دست‌هایش می‌لرزد.','نگاهش را از تو می‌دزدد.','مدام یقه‌اش را صاف می‌کند.','صدایش یک لحظه می‌شکند.'];
+const CUE_C=['آرام و بی‌حرکت نشسته.','مستقیم نگاهت می‌کند.','فنجان چایش را برمی‌دارد.','سرش را آهسته تکان می‌دهد.'];
+const REASONS=['نگاه‌هایش دیشب عجیب بود.','زیادی آرام است؛ آدم بی‌گناه این‌قدر خونسرد نمی‌ماند.','وقتی شاهد حرف زد، رنگش پرید.','از اول شام کم حرف می‌زد و همه‌چیز را زیر نظر داشت.','دیشب صدای در را از سمت اتاق او شنیدم.'];
+
+/* شخصیت‌ها: anx = اضطراب طبیعی، comp = خونسردیِ مافیا بودن، temper = زودجوشی */
+const PROF=[
+  {job:'معلم بازنشستهٔ ریاضی',trait:'محتاط و مؤدب',anx:.2,comp:.5,temper:.2},
+  {job:'روزنامه‌نگار',trait:'تیزبین و بدگمان',anx:.2,comp:.4,temper:.5},
+  {job:'تاجر',trait:'پرحرف و زودجوش',anx:.4,comp:.1,temper:.85},
+  {job:'نقاش',trait:'حساس و زود مضطرب',anx:.55,comp:.1,temper:.3},
+  {job:'باغبان و نگهبان عمارت',trait:'خونسرد و کم‌حرف',anx:.1,comp:.8,temper:.3},
+  {job:'وکیل',trait:'منطقی و سردمزاج',anx:.12,comp:.7,temper:.35},
+  {job:'بازیگر تئاتر',trait:'شوخ و نمایشی',anx:.3,comp:.3,temper:.5}
+];
+const FRIENDS=[[0,5],[3,6],[2,4]], RIVALS=[[1,2],[5,6],[0,2]];
+const LINES=[
+ { // آرمان
+  calm:['تا ساعت یازده کتاب می‌خواندم، بعد چراغ را خاموش کردم. چیز غیرعادی‌ای نشنیدم.','در اتاقم بودم، پسرم. پنجره را بستم و خوابیدم؛ همین.'],
+  nerv:['ببخشید... فکر می‌کنم قبلاً هم گفتم؛ در اتاقم بودم. فقط این فضا اعصاب آدم را خراب می‌کند.','من؟ نه، نه... من جایی نرفتم. حتماً می‌دانید که من آدم این کارها نیستم.'],
+  angry:['سی سال بچه‌ها را به راستی دعوت کرده‌ام. این لحن بازجویی را قبول ندارم.','با احترام، این طرز سؤال کردن شایستهٔ هیچ‌کداممان نیست.'],
+  warm:'ممنون که آرام می‌پرسی.',
+  grief:['{v} را همین چند ساعت پیش سرِ شام دیده بودم. باورم نمی‌شود.','این دیگر شوخی نیست. باید حساب‌شده تصمیم بگیریم، نه از روی ترس.'],
+  accuse:['با منطق که نگاه کنیم، {t} محتمل‌تر از بقیه است.','نمی‌خواهم کسی را بی‌دلیل متهم کنم، ولی {t} را باید بررسی کنیم.'],
+  defend:['اتهام بی‌دلیل است. هر مدرکی دارید بیاورید.','من خودم قربانی این سوءظن شدم، نه عامل آن.'],
+  farewell:['من بی‌گناهم... امیدوارم بعداً بفهمید.','قضاوت عجولانه همیشه گران تمام می‌شود.'],
+  clue:'شاهد می‌گوید مهاجم {x}. فهرست آدم‌های مطابق را باید با دقت بررسی کرد.'
+ },
+ { // بهار
+  calm:['کارم را کرده بودم: یادداشت‌هایم را مرور کردم و خوابیدم. در اتاقم هم قفل بود.','تا نصف شب نوشتم. بعدش فقط صدای رعد بود.'],
+  nerv:['می‌دانی چقدر کارم را دقیق انجام می‌دهم؟... بله، در اتاق بودم. دست از این نگاه بردار.','هیچ‌چیز... یعنی چیزی نبود که ارزش گفتن داشته باشد.'],
+  angry:['سؤال‌های تو شبیه تله است. من هم مثل تو شاهدم، نه متهم.','اگر قرار است متهم شوم، مدرکتان را رو کنید.'],
+  warm:'خب، این‌طوری بهتر است؛ رک بگویم...',
+  grief:['کسی که می‌کشد برنامه دارد. این اتفاقی نبود.','{v} حق نداشت این‌طور تمام شود.'],
+  accuse:['من از {t} خوشم نمی‌آید؛ جوابش همیشه یک ثانیه دیر می‌آید.','روزنامه‌نگار بو می‌کشد؛ بوی {t} درست نیست.'],
+  defend:['فکر می‌کنی چون سؤال می‌پرسم مقصرم؟ مضحک است.','انگشت را سمت کسی بگیرید که رد دارد، نه آدمی که حقیقت را می‌پرسد.'],
+  farewell:['یادتان باشد که من هشدار دادم.','قاتل هنوز این‌جاست و دارد لبخند می‌زند.'],
+  clue:'«{x}» — یعنی دایره کوچک‌تر می‌شود. چشم‌هایتان را باز کنید.'
+ },
+ { // کاوه
+  calm:['اتاقم بودم دیگه! تا دیروقت تلفنی کار داشتم، بعدم خوابیدم. بیخیال.','یه لیوان شربت خوردم و افتادم. صبح هم با صدای جیغ بیدار شدم.'],
+  nerv:['چرا از من؟ خب بودم دیگه! همین‌جا بودم، چرا همه‌تان زل زدین به من؟','من قاطی این کثافت‌کاری‌ها نیستم، شنیدی؟ نیستم!'],
+  angry:['به من نگو بازجویی! من پول این میهمانی را داده‌ام، نه تو!','یه بار دیگه این لحن را بشنوم، بلند می‌شوم می‌روم.'],
+  warm:'آره، با این لحن می‌شود حرف زد رفیق.',
+  grief:['لعنت به این شب! {v}؟! همین دیشب داشت باهام شوخی می‌کرد...','باید یکی را همین امروز بیرون بیندازیم، وقت نداریم!'],
+  accuse:['{t} قیافه‌اش خوب نیست. خودتان هم دیدید دیشب چطور می‌پایید.','رک بگویم: {t}. بقیه‌اش بحث نیست.'],
+  defend:['چی؟! من؟ برو بابا، اگر بخواهم کسی را بزنم جلوی چشم همه می‌زنم!','حرف مفت است. من فقط بلند حرف می‌زنم، همین.'],
+  farewell:['دارید اشتباه می‌کنید، می‌فهمید؟ اشتباه!','حیف... خداحافظ آدم‌های ترسو.'],
+  clue:'پس {x}؟ خب این که خیلی‌ها را شامل می‌شود. باز هم باید بگردیم!'
+ },
+ { // ملیکا
+  calm:['اتاقم بودم و نقاشی می‌کردم. موقع کشیدن آسمان شب، رعد زد؛ همین یادم است.','زود خوابیدم. سردردم گرفته بود.'],
+  nerv:['ببخشید... دست‌هایم می‌لرزد، از وقتی این اتفاق‌ها شروع شد. من... در اتاق بودم.','نمی‌دانم چرا این‌قدر می‌ترسم. جایی نرفتم، قسم می‌خورم.'],
+  angry:['لطفاً این‌طور صدایم نکن... دارد گریه‌ام می‌گیرد.','من نمی‌توانم زیر این فشار حرف بزنم!'],
+  warm:'ممنونم که مهربانی می‌کنی. این‌جا همه‌چیز سنگین است.',
+  grief:['{v}... دیشب بهم لبخند زد. نمی‌توانم باور کنم.','کاش می‌شد همه‌مان برویم از این‌جا.'],
+  accuse:['نمی‌دانم... ولی از {t} می‌ترسم. نمی‌توانم توضیح بدهم، فقط حس بدی دارم.','اگر اشتباه می‌کنم ببخشید؛ ولی {t} دیشب خیلی ساکت بود.'],
+  defend:['من؟! نه... خواهش می‌کنم... من حتی نمی‌توانم یک پرنده را آزار بدهم.','چرا؟ من هیچ‌کاری نکرده‌ام.'],
+  farewell:['خواهش می‌کنم یادتان باشد من بی‌گناه بودم...','نقاشی‌هایم را نگه دارید.'],
+  clue:'«{x}»... خدایا. یعنی یکی از ما همین چند قدم آن‌طرف‌تر نشسته.'
+ },
+ { // سیاوش
+  calm:['همین‌جا بودم. دور خانه را گشتم، دری باز نبود؛ آمدم خوابیدم.','بیرون چراغ‌ها را چک کردم. بعد خوابیدم.'],
+  nerv:['...دیشب؟ نگهبانی می‌دادم. چیزی نبود. چیزی. چرا می‌پرسی؟','من کاری نکردم. فقط دور خانه می‌چرخیدم، همین.'],
+  angry:['من کم حرف می‌زنم. به این معنی نیست که چیزی پنهان می‌کنم.','یک بار دیگر این‌طور بپرسی، جواب نمی‌دهم.'],
+  warm:'بپرس. آنچه دیدم را می‌گویم.',
+  grief:['{v} را من اول دیدم. بهتر است بقیه نبینند.','باید در را قفل می‌کردیم؛ نه... دیر است.'],
+  accuse:['{t}. دلیلش را نمی‌توانم بگویم. فقط چشم‌ها دروغ نمی‌گویند.','از بقیه چیزی نمی‌دانم. {t} را زیر نظر بگیرید.'],
+  defend:['ثابت کنید.','سال‌هاست این‌جا کار می‌کنم. حرف‌تان بی‌پایه است.'],
+  farewell:['باشد. من می‌روم. حواستان به چراغ‌ها باشد.','اشتباه کردید.'],
+  clue:'{x}. اگر واقعاً دیده باشد، می‌شود پیدایش کرد.'
+ },
+ { // نگار
+  calm:['طبق برنامه‌ام: ساعت ده در اتاق، یازده خواب. شاهدی ندارم، ولی دلیلی هم برای دروغ گفتن ندارم.','تا دیروقت پرونده می‌خواندم و بعد خوابیدم.'],
+  nerv:['اتهامی وارد نشده که دفاع کنم... خب... بله، اتاقم بودم. دیگر چه می‌خواهید؟','سؤالت را مستقیم‌تر بپرس. این دورزدن‌ها... مرا سردرگم می‌کند.'],
+  angry:['سؤالت جهت‌دار است و من پاسخ نمی‌دهم.','لحنت را اصلاح کن. این بازجویی غیرقانونی است.'],
+  warm:'سؤال منصفانه‌ای است. جواب می‌دهم.',
+  grief:['قتل با برنامه‌ریزی. حالا باید منطقی ادامه بدهیم، نه احساسی.','{v}... متأسفم. ولی گریه چیزی را حل نمی‌کند.'],
+  accuse:['از نظر منطقی، {t} بیشترین تناقض را دارد.','شواهد به {t} اشاره می‌کنند، هرچند هنوز اثبات نیست.'],
+  defend:['بار اثبات با اتهام‌زننده است، نه من.','بدون مدرک، این ادعا فقط شایعه است.'],
+  farewell:['حکم نادرستی است. بعداً می‌فهمید.','اکثریت هم گاهی اشتباه می‌کند.'],
+  clue:'توصیف ناقص است، ولی «{x}» را می‌شود به‌عنوان فیلتر به کار برد.'
+ },
+ { // پرهام
+  calm:['من؟ تمام شب در نقش خودم بودم: یک مرد خوابیده. بازی‌اش هم عالی بود!','توی اتاق بودم و برای نمایش بعدی دیالوگ تمرین می‌کردم؛ تنها نقش بدون تماشاگر.'],
+  nerv:['ها ها... خب... ببین، من هیچ‌وقت نقش قاتل بازی نکرده‌ام! خنده‌ام را نبین، می‌ترسم.','شوخی بگذار کنار. من... اتاق بودم. جدی می‌گویم.'],
+  angry:['هنرمند را این‌طور بازجویی نمی‌کنند! بس است.','این پرده دیگر خنده‌دار نیست.'],
+  warm:'ببین، با تو راحتم. بپرس عزیز.',
+  grief:['من این صحنه را در هیچ نمایشی ندیده بودم؛ {v}... نه، این بازی نیست.','خنده‌ام را ببخش، وقتی می‌ترسم می‌خندم.'],
+  accuse:['فکر می‌کنم {t} نقشش را خوب بازی نمی‌کند؛ چیزی در چشم‌هایش هست.','به نظرم {t}. من آدم‌ها را بهتر از بقیه می‌خوانم.'],
+  defend:['من؟! بازیگر مظنون به قتل! تیتر روزنامه هم شد.','اگر من قاتل بودم، یک دیالوگ ماندگار هم می‌گفتم!'],
+  farewell:['پرده... می‌افتد. بی‌گناه... می‌روم.','دست‌کم کسی دست بزند!'],
+  clue:'«{x}» — کارگردان‌ها هم این‌قدر سرنخ نمی‌دادند!'
+ }
+];
+const fmt=(str,r)=>str.replace(/\{(\w+)\}/g,(m,k)=>r[k]!=null?r[k]:'');
+const say=(c,k,r={})=>{ const v=LINES[c.id][k]; return fmt(Array.isArray(v)?pick(v):v,r); };
+const clamp=(x,lo,hi)=>Math.min(hi,Math.max(lo,x));
+function nervProb(c,tone){
+  const p=c.p; return clamp(p.anx+(c.role==='mafia'?.42*(1-p.comp):0)+(tone==='hard'?.15:tone==='soft'?-.1:0),.04,.92);
+}
+
+/* ============ صحنهٔ سه‌بعدی ============ */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x140d12,0.03);
+const bg=new THREE.Color(0x140d12); scene.background=bg;
+const camera=new THREE.PerspectiveCamera(58,1,0.1,70);
+
+const amb=new THREE.AmbientLight(0x6b5a66,0.5); scene.add(amb);
+const lamp=new THREE.SpotLight(0xffb866,3,24,0.95,0.7,1.2);
+lamp.position.set(0,5.2,0); lamp.castShadow=true; lamp.shadow.mapSize.set(1024,1024); lamp.shadow.bias=-0.0006;
+lamp.target.position.set(0,0,0); scene.add(lamp); scene.add(lamp.target);
+const fill=new THREE.PointLight(0xffa860,0.6,14,1.5); fill.position.set(0,3.6,0); scene.add(fill);
+const moon=new THREE.DirectionalLight(0x7f95e0,0.3); moon.position.set(-4,7,-9); scene.add(moon);
+
+function canvasTex(w,h,draw,rep){
+  const cv=document.createElement('canvas'); cv.width=w; cv.height=h; draw(cv.getContext('2d'),w,h);
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; if(rep) t.repeat.set(rep[0],rep[1]);
+  t.anisotropy=4; return t;
+}
+const woodTex=canvasTex(512,512,(x,w,h)=>{
+  x.fillStyle='#2b1b13'; x.fillRect(0,0,w,h);
+  for(let i=0;i<8;i++){ const l=18+Math.random()*6; x.fillStyle=`hsl(22,38%,${l}%)`; x.fillRect(i*64,0,62,h);
+    for(let k=0;k<26;k++){ x.fillStyle='rgba(0,0,0,.12)'; x.fillRect(i*64+Math.random()*60,Math.random()*h,1.2,30+Math.random()*90);} }
+  x.fillStyle='rgba(0,0,0,.55)'; for(let i=0;i<=8;i++) x.fillRect(i*64-1,0,2,h);
+},[5,5]);
+const wallTex=canvasTex(256,256,(x,w,h)=>{
+  x.fillStyle='#2c1a23'; x.fillRect(0,0,w,h);
+  for(let i=0;i<4;i++){ x.fillStyle=i%2?'#331e29':'#27161e'; x.fillRect(i*64,0,64,h); }
+  x.strokeStyle='rgba(226,169,75,.16)'; x.lineWidth=1.4;
+  for(let i=0;i<4;i++) for(let j=0;j<4;j++){ const cx=i*64+32, cy=j*64+32; x.beginPath(); x.moveTo(cx,cy-14); x.lineTo(cx+9,cy); x.lineTo(cx,cy+14); x.lineTo(cx-9,cy); x.closePath(); x.stroke(); }
+},[10,1.6]);
+const rugTex=canvasTex(512,512,(x,w,h)=>{
+  const g=x.createRadialGradient(256,256,20,256,256,256); g.addColorStop(0,'#6a1b2a'); g.addColorStop(1,'#3d0f19');
+  x.fillStyle=g; x.fillRect(0,0,w,h);
+  x.strokeStyle='rgba(226,169,75,.55)'; for(const r of [236,214,150,90]){ x.lineWidth=r>200?3:1.5; x.beginPath(); x.arc(256,256,r,0,7); x.stroke(); }
+  x.strokeStyle='rgba(226,169,75,.25)'; for(let a=0;a<24;a++){ x.beginPath(); x.moveTo(256+Math.cos(a*Math.PI/12)*90,256+Math.sin(a*Math.PI/12)*90); x.lineTo(256+Math.cos(a*Math.PI/12)*150,256+Math.sin(a*Math.PI/12)*150); x.stroke(); }
+});
+
+const floor=new THREE.Mesh(new THREE.CircleGeometry(9.5,48),new THREE.MeshStandardMaterial({map:woodTex,roughness:.8}));
+floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+const rug=new THREE.Mesh(new THREE.CircleGeometry(4.8,48),new THREE.MeshStandardMaterial({map:rugTex,roughness:1}));
+rug.rotation.x=-Math.PI/2; rug.position.y=0.012; rug.receiveShadow=true; scene.add(rug);
+const wall=new THREE.Mesh(new THREE.CylinderGeometry(9.5,9.5,8,48,1,true),new THREE.MeshStandardMaterial({map:wallTex,side:THREE.BackSide,roughness:.95}));
+wall.position.y=4; scene.add(wall);
+const wains=new THREE.Mesh(new THREE.CylinderGeometry(9.45,9.45,1.6,48,1,true),new THREE.MeshStandardMaterial({color:0x1d120d,side:THREE.BackSide,roughness:.7}));
+wains.position.y=0.8; scene.add(wains);
+const ceil=new THREE.Mesh(new THREE.CircleGeometry(9.5,48),new THREE.MeshStandardMaterial({color:0x120c10,roughness:1}));
+ceil.rotation.x=Math.PI/2; ceil.position.y=8; scene.add(ceil);
+
+const winMat=new THREE.MeshBasicMaterial({color:0x6a5a58});
+for(const k of [-1,0,1]){
+  const phi=Math.PI+k*0.5; const g=new THREE.Group();
+  const pane=new THREE.Mesh(new THREE.PlaneGeometry(1.7,2.9),winMat); g.add(pane);
+  const fm=new THREE.MeshStandardMaterial({color:0x1a100b,roughness:.6});
+  for(const [w,h,x,y] of [[1.9,.1,0,1.5],[1.9,.1,0,-1.5],[.1,3.1,.9,0],[.1,3.1,-.9,0],[1.7,.05,0,0],[.05,2.9,0,0]]){
+    const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,.08),fm); b.position.set(x,y,.03); g.add(b); }
+  g.position.set(Math.sin(phi)*9.35,3.9,Math.cos(phi)*9.35); g.lookAt(0,3.9,0); scene.add(g);
+}
+
+/* میز */
+const woodDark=new THREE.MeshStandardMaterial({color:0x3a2418,roughness:.45,metalness:.05});
+const tableTop=new THREE.Mesh(new THREE.CylinderGeometry(1.95,1.95,.16,48),woodDark); tableTop.position.y=1.12; tableTop.castShadow=tableTop.receiveShadow=true; scene.add(tableTop);
+const tcloth=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,.012,40),new THREE.MeshStandardMaterial({color:0x6a1b2a,roughness:.9})); tcloth.position.y=1.205; scene.add(tcloth);
+const tleg=new THREE.Mesh(new THREE.CylinderGeometry(.5,.8,1.05,24),woodDark); tleg.position.y=.52; tleg.castShadow=true; scene.add(tleg);
+const flameMat=new THREE.MeshBasicMaterial({color:0xffc060});
+function makeCandle(h){
+  const g=new THREE.Group();
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,h,12),new THREE.MeshStandardMaterial({color:0xece3cd,roughness:.7})); w.position.y=h/2; g.add(w);
+  const f=new THREE.Mesh(new THREE.SphereGeometry(.04,10,8),flameMat); f.scale.y=1.7; f.position.y=h+.06; g.add(f); g.userData.flame=f; return g;
+}
+const cdl=new THREE.Group();
+const cb=new THREE.Mesh(new THREE.CylinderGeometry(.2,.26,.06,16),new THREE.MeshStandardMaterial({color:0xb08a3a,metalness:.8,roughness:.35})); cb.position.y=.03; cdl.add(cb);
+const cs=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,.35,10),cb.material); cs.position.y=.2; cdl.add(cs);
+const centerCandle=makeCandle(.3); centerCandle.position.y=.38; cdl.add(centerCandle);
+cdl.position.y=1.2; scene.add(cdl);
+
+/* لوستر */
+const lampG=new THREE.Group(); scene.add(lampG);
+const shade=new THREE.Mesh(new THREE.ConeGeometry(.75,.55,24,1,true),new THREE.MeshStandardMaterial({color:0x2c4a3a,side:THREE.DoubleSide,roughness:.5,metalness:.3})); shade.position.y=5.45; lampG.add(shade);
+const bulb=new THREE.Mesh(new THREE.SphereGeometry(.13,12,10),new THREE.MeshBasicMaterial({color:0xffd9a0})); bulb.position.y=5.15; lampG.add(bulb);
+const cord=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,2.7,6),new THREE.MeshBasicMaterial({color:0x0c0a0a})); cord.position.y=6.8; lampG.add(cord);
+
+/* گردوغبار */
+const DN=140, dpos=new Float32Array(DN*3);
+for(let i=0;i<DN;i++){ const a=Math.random()*6.28, r=Math.random()*3.8; dpos[i*3]=Math.cos(a)*r; dpos[i*3+1]=.5+Math.random()*4.6; dpos[i*3+2]=Math.sin(a)*r; }
+const dgeo=new THREE.BufferGeometry(); dgeo.setAttribute('position',new THREE.BufferAttribute(dpos,3));
+const dust=new THREE.Points(dgeo,new THREE.PointsMaterial({size:.045,color:0xffd9a0,transparent:true,opacity:.45,depthWrite:false})); scene.add(dust);
+
+/* صندلی و فنجان (ثابت) */
+const R_CHAR=2.75;
+const chairMat=new THREE.MeshStandardMaterial({color:0x2a1a12,roughness:.7});
+const cupMat=new THREE.MeshStandardMaterial({color:0xe8e0d0,roughness:.4});
+for(let i=1;i<8;i++){
+  const th=i*Math.PI/4, g=new THREE.Group();
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(.95,.12,.95),chairMat); seat.position.y=.52; g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(.95,1.15,.1),chairMat); back.position.set(0,1.15,-.47); g.add(back);
+  for(const [x,z] of [[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]]){ const l=new THREE.Mesh(new THREE.BoxGeometry(.08,.52,.08),chairMat); l.position.set(x,.26,z); g.add(l); }
+  g.position.set(Math.sin(th)*(R_CHAR+.12),0,Math.cos(th)*(R_CHAR+.12)); g.lookAt(0,0,0);
+  g.traverse(o=>{ if(o.isMesh){o.castShadow=true;o.receiveShadow=true;} }); scene.add(g);
+  const cup=new THREE.Mesh(new THREE.CylinderGeometry(.09,.07,.12,12),cupMat); cup.position.set(Math.sin(th)*1.35,1.27,Math.cos(th)*1.35); cup.castShadow=true; scene.add(cup);
+}
+
+/* ============ ساخت شخصیت ============ */
+function buildChar(c){
+  const g=new THREE.Group(), f=c.feat, mats=[];
+  const M=(color,r=.8)=>{ const m=new THREE.MeshStandardMaterial({color,roughness:r}); mats.push(m); return m; };
+  const upper=new THREE.Group(); upper.position.y=.62; g.add(upper); const arms=[];
+  const coat=M(COATS[f.coat].hex);
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.4,.52,1.2,14),coat); body.position.y=.6; upper.add(body);
+  const sh=new THREE.Mesh(new THREE.SphereGeometry(.46,14,10),coat); sh.scale.set(1.05,.5,.7); sh.position.y=1.15; upper.add(sh);
+  const skin=M(f.skin,.7), hairM=M(f.hair,.9);
+  const head=new THREE.Group(); head.position.y=1.3; upper.add(head);
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.11,.13,.22,10),skin); neck.position.y=.02; head.add(neck);
+  const hm=new THREE.Mesh(new THREE.SphereGeometry(.29,20,16),skin); hm.position.y=.3; head.add(hm);
+  const nose=new THREE.Mesh(new THREE.SphereGeometry(.04,8,8),skin); nose.position.set(0,.28,.29); head.add(nose);
+  const eyeM=new THREE.MeshStandardMaterial({color:0x0b0b0b,roughness:.3}); const eyes=[];
+  for(const s of [-1,1]){ const e=new THREE.Mesh(new THREE.SphereGeometry(.035,8,8),eyeM); e.position.set(s*.1,.34,.265); head.add(e); eyes.push(e);
+    const br=new THREE.Mesh(new THREE.BoxGeometry(.09,.016,.016),hairM); br.position.set(s*.1,.42,.272); br.rotation.z=-s*.15; head.add(br); }
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(.305,18,12,0,Math.PI*2,0,Math.PI*.52),hairM); cap.position.y=.3; cap.rotation.x=-.35; head.add(cap);
+  if(f.long){ const lh=new THREE.Mesh(new THREE.CylinderGeometry(.28,.3,.58,14),hairM); lh.position.set(0,.06,-.1); head.add(lh); }
+  if(f.hat){
+    const hc=M(HATC[c.id%3],.8);
+    const brim=new THREE.Mesh(new THREE.CylinderGeometry(.44,.44,.03,22),hc); brim.position.y=.5; head.add(brim);
+    const crown=new THREE.Mesh(new THREE.CylinderGeometry(.26,.3,.27,18),hc); crown.position.y=.64; head.add(crown);
+    const band=new THREE.Mesh(new THREE.CylinderGeometry(.305,.305,.05,18),M(0x7a2433)); band.position.y=.54; head.add(band);
+  }
+  if(f.glasses){
+    const gm=new THREE.MeshStandardMaterial({color:0x0a0a0a,roughness:.3,metalness:.5});
+    for(const s of [-1,1]){ const r=new THREE.Mesh(new THREE.TorusGeometry(.07,.013,8,18),gm); r.position.set(s*.105,.34,.272); head.add(r); }
+    const br=new THREE.Mesh(new THREE.CylinderGeometry(.007,.007,.07,6),gm); br.rotation.z=Math.PI/2; br.position.set(0,.35,.278); head.add(br);
+  }
+  if(f.scarf){
+    const sm=M(SCARFC[c.id%3],.95);
+    const t=new THREE.Mesh(new THREE.TorusGeometry(.3,.1,10,20),sm); t.rotation.x=Math.PI/2; t.position.y=1.26; upper.add(t);
+    const tail=new THREE.Mesh(new THREE.BoxGeometry(.15,.5,.05),sm); tail.position.set(.12,1.0,.42); tail.rotation.x=.18; upper.add(tail);
+  }
+  for(const s of [-1,1]){
+    const arm=new THREE.Group(); arm.position.set(s*.5,1.12,.04); arm.rotation.x=-.9; arm.rotation.z=s*.1;
+    const ag=new THREE.CylinderGeometry(.09,.1,.9,10); ag.translate(0,-.45,0);
+    arm.add(new THREE.Mesh(ag,coat));
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),skin); hand.position.y=-.93; arm.add(hand); upper.add(arm); arms.push(arm);
+  }
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.72,.86,40),new THREE.MeshBasicMaterial({color:0xe2a94b,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));
+  ring.rotation.x=-Math.PI/2; ring.position.y=.04; g.add(ring);
+  const sc=f.tall?1.12:1; g.scale.setScalar(sc);
+  g.position.set(Math.sin(c.theta)*R_CHAR,0,Math.cos(c.theta)*R_CHAR); g.lookAt(0,0,0);
+  g.traverse(o=>{ if(o.isMesh && o!==ring){ o.castShadow=true; o.receiveShadow=true; } o.userData.cid=c.id; });
+  scene.add(g);
+  Object.assign(c,{group:g,upper,head,eyes,mats,coat,ring,sc,arms,eyeS:1,speak:0,vis:1});
+}
+function greyOut(c){
+  const hsl={};
+  c.mats.forEach(m=>{ m.color.getHSL(hsl); m.color.setHSL(hsl.h,hsl.s*.2,hsl.l*.7); });
+}
+
+/* ============ حالت شب/روز ============ */
+const CL={
+  ambD:new THREE.Color(0x6b5a66),ambN:new THREE.Color(0x2a3566),
+  moonD:new THREE.Color(0xffc99a),moonN:new THREE.Color(0x7f95e0),
+  winD:new THREE.Color(0x7a625a),winN:new THREE.Color(0x4a66c8),
+  fogD:new THREE.Color(0x140d12),fogN:new THREE.Color(0x03040a)
+};
+let moodT=0,moodCur=0,ltn=0,flick=0,shake=0;
+function applyMood(m,t){
+  const L=(a,b)=>a+(b-a)*m;
+  const fl=1+Math.sin(t*9)*.025+Math.sin(t*23)*.02+(Math.random()-.5)*.03+(flick>0?(Math.random()-.5)*flick*1.6:0);
+  lamp.intensity=Math.max(0,L(3.1,.22)*fl); fill.intensity=Math.max(0,L(.6,.04)*fl);
+  amb.color.lerpColors(CL.ambD,CL.ambN,m); amb.intensity=L(.5,.36)+ltn*1.4;
+  moon.color.lerpColors(CL.moonD,CL.moonN,m); moon.intensity=L(.25,.95)+ltn*1.2;
+  winMat.color.lerpColors(CL.winD,CL.winN,m).multiplyScalar(1+ltn*2.2);
+  scene.fog.color.lerpColors(CL.fogD,CL.fogN,m); bg.copy(scene.fog.color);
+  bulb.material.color.setScalar(L(1,.28));
+}
+
+/* ============ دوربین ============ */
+const cam={az:0,el:.7,dist:13,tx:0,ty:1.3,tz:0,t:{az:0,el:.7,dist:13,tx:0,ty:1.3,tz:0}};
+let introSpin=true, viewOff=0, viewOffT=0, W=1, H=1;
+function overviewDist(){ const asp=W/H, tn=Math.tan(29*Math.PI/180); return Math.min(14.2,Math.max(9.5,7.4/(2*tn*Math.min(asp,1.4)))); }
+function focusOverview(){ Object.assign(cam.t,{az:0,el:.7,dist:overviewDist(),tx:0,ty:1.3,tz:0}); }
+function focusChar(c){ const th=c.theta; Object.assign(cam.t,{az:th+Math.PI,el:.36,dist:6.3,tx:Math.sin(th)*1.5,ty:1.75,tz:Math.cos(th)*1.5}); }
+const angDiff=(a,b)=>Math.atan2(Math.sin(b-a),Math.cos(b-a));
+function resize(){
+  W=innerWidth; H=innerHeight; renderer.setSize(W,H,false); camera.aspect=W/H;
+  if(introSpin||!G||G.phase==='intro'){ cam.t.dist=overviewDist(); } else if(!G.sel) cam.t.dist=overviewDist();
+}
+addEventListener('resize',resize);
+
+/* ============ وضعیت بازی ============ */
+let G=null;
+const byId=id=>G.chars.find(c=>c.id===id);
+const aliveNPC=()=>G.chars.filter(c=>c.state==='alive');
+
+function newGame(){
+  if(G){ G.chars.forEach(c=>{ scene.remove(c.group); if(c.candle) scene.remove(c.candle); c.tag.remove(); }); }
+  const roles=shuffle(['mafia','mafia','doctor','citizen','citizen','citizen','citizen']);
+  const idx=[0,1,2,3,4,5,6], sub=n=>new Set(shuffle(idx).slice(0,n));
+  const hats=sub(rnd(2,3)), gls=sub(rnd(2,3)), scs=sub(rnd(2,3)), tls=sub(rnd(2,3));
+  const coats=shuffle([0,1,2,3,0,1,2]);
+  const chars=NAMES.map((name,i)=>({
+    id:i,name,role:roles[i],state:'alive',theta:(i+1)*Math.PI/4,
+    feat:{hat:hats.has(i),glasses:gls.has(i),scarf:scs.has(i),tall:tls.has(i),coat:coats[i],skin:pick(SKIN),hair:pick(HAIR),long:FEMALE.has(name)},
+    suspect:null,notes:[],asked:{a:false,s:false},p:PROF[i],ptrust:rnd(42,58),nerv:0,angry:0,fx:{type:null,t:0}
+  }));
+  const rel=chars.map(()=>chars.map(()=>rnd(35,60)));
+  FRIENDS.forEach(([x,y])=>{rel[x][y]=rel[y][x]=rnd(72,86);});
+  RIVALS.forEach(([x,y])=>{rel[x][y]=rel[y][x]=rnd(12,28);});
+  const mm=chars.filter(c=>c.role==='mafia'); rel[mm[0].id][mm[1].id]=rel[mm[1].id][mm[0].id]=Math.max(rel[mm[0].id][mm[1].id],62);
+  G={chars,rel,night:1,phase:'intro',clues:[],inv:{},q:3,player:{alive:true},sel:null,morning:'',gaze:null,talkId:0,talkLog:[]};
+  hideBubble();
+  $('#labels').innerHTML='';
+  chars.forEach(c=>{
+    buildChar(c);
+    const tag=document.createElement('div'); tag.className='tag'; tag.dataset.id=c.id; tag.addEventListener('click',()=>selectChar(c.id));
+    $('#labels').appendChild(tag); c.tag=tag; refreshTag(c);
+  });
+}
+function refreshTag(c){
+  const inv=G.inv[c.id];
+  let dot=''; if(c.state==='alive'&&inv) dot=`<span class="dot ${inv==='mafia'?'m':inv==='clean'?'c':'u'}"></span>`;
+  const mark=c.state==='dead'?'✝ ':c.state==='out'?'': '';
+  c.tag.innerHTML=`${dot}<span>${mark}${c.name}</span>`;
+  c.tag.classList.toggle('gone',c.state!=='alive');
+  c.tag.classList.toggle('sel',G.sel===c.id);
+}
+
+/* ============ رابط ============ */
+const sheet=$('#sheet');
+function sheetSet(html,btns=[]){
+  sheet.innerHTML=''; const m=document.createElement('div'); m.className='msg'; m.innerHTML=html; sheet.appendChild(m);
+  if(btns.length){ const r=document.createElement('div'); r.className='row';
+    btns.forEach(b=>{ const e=document.createElement('button'); e.type='button'; e.className='btn '+(b.k||''); e.textContent=b.t; if(b.off) e.disabled=true; e.onclick=b.fn; r.appendChild(e); });
+    sheet.appendChild(r); }
+  sheet.scrollTop=0; sheet.classList.add('on');
+}
+function setChip(txt,night){ const c=$('#phaseChip'); c.textContent=txt; c.dataset.night=night?1:0; }
+function setMood(m){ moodT=m; }
+function modal(html){ const m=$('#modal'); m.innerHTML='<div class="card">'+html+'</div>'; m.classList.add('on'); return m.firstChild; }
+function closeModal(){ const m=$('#modal'); m.classList.remove('on'); m.innerHTML=''; }
+function boom(){ const f=$('#flash'); f.classList.remove('go'); void f.offsetWidth; if(!reduce) f.classList.add('go'); flick=1; if(!reduce) shake=1; ltn=1; }
+
+function chips(c){
+  const f=c.feat, a=[];
+  if(f.hat)a.push('کلاه'); if(f.glasses)a.push('عینک'); if(f.scarf)a.push('شال‌گردن');
+  a.push(f.tall?'قدبلند':'قد معمولی'); a.push('پالتو '+COATS[f.coat].n);
+  return a.map(x=>`<span class="chipf">${x}</span>`).join('');
+}
+function badge(c){
+  if(c.state==='dead') return '<span class="badge x">کشته شد</span>';
+  if(c.state==='out') return '<span class="badge x">کنار گذاشته شد</span>';
+  const i=G.inv[c.id];
+  if(i==='mafia') return '<span class="badge m">مافیا</span>';
+  if(i==='clean') return '<span class="badge c">بی‌گناه</span>';
+  if(i==='unk') return '<span class="badge u">پرونده ناخوانا</span>';
+  return '';
+}
+
+/* ============ انتخاب شخصیت ============ */
+function selectChar(id){
+  if(!G||G.phase==='intro'||G.phase==='end') return;
+  const c=byId(id);
+  if(G.phase==='day'){ setSel(id); focusChar(c); openCard(c); }
+  else if(G.phase==='nightPick'){ setSel(id); focusChar(c); nightCard(c); }
+  else if(G.phase==='dawn'||G.phase==='nightDone'||G.phase==='night'||G.phase==='vote'){ setSel(id); focusChar(c); }
+}
+function setSel(id){ G.sel=id; G.chars.forEach(c=>{ const on=c.id===id; c.ring.material.opacity=on?.85:0; c.coat.emissive.setHex(on?0x2a1604:0x000000); refreshTag(c); }); }
+function clearSel(){ G.sel=null; G.chars.forEach(c=>{ c.ring.material.opacity=0; c.coat.emissive.setHex(0); refreshTag(c); }); }
+
+function bio(c){
+  const fr=FRIENDS.find(q=>q.includes(c.id)), rv=RIVALS.filter(q=>q.includes(c.id));
+  let t=`${c.p.job}؛ ${c.p.trait}.`;
+  if(fr) t+=` با ${NAMES[fr[0]===c.id?fr[1]:fr[0]]} دوست نزدیک است.`;
+  rv.forEach(q=>{ t+=` با ${NAMES[q[0]===c.id?q[1]:q[0]]} اختلاف دارد.`; });
+  return `<span class="dim">${t}</span>`;
+}
+function openCard(c){
+  const gone=c.state!=='alive';
+  const head=`<p><b>${c.name}</b> ${badge(c)}<br>${bio(c)}<br>${chips(c)}</p>`;
+  if(gone){ sheetSet(head+`<p class="dim">${c.state==='dead'?'او دیگر جواب نمی‌دهد.':'او دیگر سر میز نیست.'}</p>`,[{t:'بازگشت',fn:()=>dayMain()}]); return; }
+  const noq=G.q<=0, tl=c.ptrust>=65?'زیاد':c.ptrust>=35?'متوسط':'کم';
+  sheetSet(head+`<p class="dim">اعتماد او به تو: ${tl} · پرسش‌های باقی‌مانده: ${FA(G.q)}</p>`,[
+    {t:'دیشب کجا بودی؟',off:noq||c.asked.a,fn:()=>toneMenu(c,'a')},
+    {t:'به چه کسی شک داری؟',off:noq||c.asked.s,fn:()=>toneMenu(c,'s')},
+    {t:'بازگشت',fn:()=>dayMain()}
+  ]);
+}
+function toneMenu(c,type){
+  sheetSet(`<p><b>${c.name}</b> منتظر است. با چه لحنی بپرسی؟</p><p class="dim">لحن تند ممکن است آدم‌ها را دست‌پاچه کند، ولی اعتمادشان را می‌سوزاند و زودجوش‌ها را عصبانی می‌کند. لحن همدلانه آدم‌ها را بازتر می‌کند. کسانی که به تو اعتماد دارند، در رأی‌گیری از تو پیروی می‌کنند.</p>`,[
+    {t:'همدلانه',k:'primary',fn:()=>ask(c,type,'soft')},
+    {t:'محکم و تند',k:'danger',fn:()=>ask(c,type,'hard')},
+    {t:'بازگشت',fn:()=>openCard(c)}
+  ]);
+}
+function ask(c,type,tone){
+  G.q--; if(type==='a') c.asked.a=true; else c.asked.s=true;
+  const hard=tone==='hard', p=c.p; let speech='',cue='',skipTrust=false;
+  if(hard&&c.ptrust<25){
+    speech='حرفی با تو ندارم. برو سراغ یکی دیگر.'; cue='رویش را برمی‌گرداند.'; c.ptrust-=6; skipTrust=true; setFx(c,'shake',1.6);
+  } else if(Math.random()<(hard?.1+p.temper*.8:p.temper*.1)){
+    speech=say(c,'angry'); cue='صورتش سرخ شده و صدایش بالا رفته.'; c.ptrust-=hard?15:6; skipTrust=true; c.angry=2.5; setFx(c,'shake',1.8);
+  } else if(type==='a'){
+    const nerv=Math.random()<nervProb(c,tone);
+    speech=say(c,nerv?'nerv':'calm'); if(!hard&&c.ptrust>=55) speech=say(c,'warm')+' '+speech;
+    cue=pick(nerv?CUE_N:CUE_C); if(nerv) c.nerv=4;
+  } else {
+    const t=c.suspect!=null?byId(c.suspect):null;
+    if(t&&t.state==='alive'){
+      speech=say(c,'accuse',{t:t.name});
+      const lt=G.clues[G.clues.length-1], test=lt&&TESTS.find(x=>x.id===lt.testId);
+      if(!hard){ speech+=' '+((test&&test.f(t)===lt.pol&&Math.random()<.7)?`شاهد گفت مهاجم ${lt.text}؛ ${t.name} هم با این توصیف جور درمی‌آید.`:pick(REASONS)); }
+      const nerv=Math.random()<nervProb(c,tone)*.7; cue=pick(nerv?CUE_N:CUE_C); if(nerv) c.nerv=3;
+    } else { speech='هنوز مطمئن نیستم. شاید باید دوباره فکر کنم.'; cue=pick(CUE_C); }
+  }
+  if(!skipTrust) c.ptrust+=hard?-12:8;
+  c.ptrust=clamp(c.ptrust,0,100);
+  G.gaze={speaker:c.id,player:true,until:performance.now()+7000};
+  showBubble(c,speech,7000); c.speak=clamp(speech.length*.06,2,6);
+  c.notes.push(`روز ${FA(G.night)}، ${type==='a'?'دربارهٔ دیشب':'دربارهٔ مظنون'} (${hard?'تند':'همدلانه'}): «${speech}» — ${cue}`);
+  sheetSet(`<p><b>${c.name}</b> <span class="dim">(${hard?'لحن تند':'لحن همدلانه'})</span></p><div class="say">«${speech}»</div><p class="cue">${cue}</p><p class="dim">پرسش‌های باقی‌مانده: ${FA(G.q)}</p>`,[{t:'بازگشت',k:'primary',fn:()=>openCard(c)}]);
+}
+
+/* ============ جریان بازی ============ */
+function dayMain(){
+  clearSel(); focusOverview(); G.phase='day';
+  sheetSet(G.morning+`<p class="dim">روی میهمانان بزن تا بازجویی کنی (${FA(G.q)} پرسش مانده). وقتی آماده بودی، رأی‌گیری را شروع کن.</p>`,[
+    {t:'رأی‌گیری',k:'primary',fn:showVote},
+    {t:'دفترچه',fn:openNotebook}
+  ]);
+}
+function beginNight(){
+  clearSel(); focusOverview(); G.phase='night'; setMood(1); setChip('شب '+FA(G.night),true);
+  const txt=G.night===1
+    ? 'باران به شیشه‌ها می‌کوبد. چراغ‌ها ضعیف می‌شوند و همه سر روی میز می‌گذارند. فقط تو بیداری، کارآگاه.'
+    : `شب ${FA(G.night)} است. همه خواب‌اند، جز مافیا و تو.`;
+  sheetSet(`<p>${txt}</p><p class="dim">می‌توانی پروندهٔ یک نفر را باز کنی؛ ولی قفلش معما دارد.</p>`,[
+    {t:'پروندهٔ یکی را باز می‌کنم',k:'primary',fn:startPick},
+    {t:'امشب فقط گوش می‌دهم',fn:dawn}
+  ]);
+}
+function startPick(){
+  G.phase='nightPick'; clearSel(); focusOverview();
+  sheetSet('<p>روی یکی از میهمانان بزن تا پرونده‌اش را باز کنی.</p>',[{t:'انصراف',fn:beginNight}]);
+}
+function nightCard(c){
+  const head=`<p><b>${c.name}</b> ${badge(c)}<br>${chips(c)}</p>`;
+  if(c.state!=='alive'){ sheetSet(head+'<p class="dim">پروندهٔ این شخص بسته شده است.</p>',[{t:'انتخاب دیگری',fn:startPick}]); return; }
+  if(G.inv[c.id]&&G.inv[c.id]!=='unk'){ sheetSet(head+'<p class="dim">پروندهٔ او را قبلاً باز کرده‌ای.</p>',[{t:'انتخاب دیگری',fn:startPick}]); return; }
+  sheetSet(head+'<p>قفل پرونده با یک معما بسته است. فقط یک فرصت داری.</p>',[
+    {t:'حل معما',k:'primary',fn:()=>startPuzzle(c)},
+    {t:'انتخاب دیگری',fn:startPick}
+  ]);
+}
+function puzzleResult(c,ok){
+  G.phase='nightDone';
+  let html;
+  if(ok){
+    G.inv[c.id]=c.role==='mafia'?'mafia':'clean';
+    html=c.role==='mafia'
+      ? `<p>قفل باز شد. پروندهٔ <b>${c.name}</b> پر از ردپاست: او <b>مافیا</b> است.</p>`
+      : `<p>قفل باز شد. پروندهٔ <b>${c.name}</b> پاک است: او <b>بی‌گناه</b> است.</p>`;
+  } else {
+    G.inv[c.id]='unk';
+    html=`<p>قفل جواب نداد و جوهر پروندهٔ <b>${c.name}</b> پخش شد. چیزی خوانا نیست.</p>`;
+  }
+  c.notes.push(`شب ${FA(G.night)}: ${ok?(c.role==='mafia'?'پرونده باز شد — مافیا است.':'پرونده باز شد — بی‌گناه است.'):'قفل باز نشد، پرونده ناخوانا.'}`);
+  refreshTag(c);
+  sheetSet(html,[{t:'منتظر سپیده‌دم',k:'primary',fn:dawn},{t:'دفترچه',fn:openNotebook}]);
+}
+
+function roleReveal(c){ return c.role==='mafia'?'او مافیا بود.':c.role==='doctor'?'او دکتر بود؛ بی‌گناه.':'او یک شهروند عادی بود.'; }
+function killChar(c){
+  c.state='dead'; greyOut(c);
+  const cd=makeCandle(.22); cd.position.set(Math.sin(c.theta)*1.55,1.205,Math.cos(c.theta)*1.55); scene.add(cd); c.candle=cd;
+  refreshTag(c);
+}
+function makeClue(shooter){
+  const pool=aliveNPC(), cands=TESTS.map(t=>{ const pol=t.f(shooter); return {t,pol,n:pool.filter(c=>t.f(c)===pol).length}; });
+  let good=cands.filter(x=>x.n>=1&&x.n<=4&&x.n<pool.length);
+  if(!good.length) good=cands.filter(x=>x.n<pool.length);
+  if(!good.length) good=cands;
+  const x=pick(good);
+  return {testId:x.t.id,pol:x.pol,text:x.pol?x.t.pos:x.t.neg,night:G.night};
+}
+function check(){
+  const am=aliveNPC().filter(c=>c.role==='mafia').length;
+  const others=aliveNPC().filter(c=>c.role!=='mafia').length+(G.player.alive?1:0);
+  if(!G.player.alive) return 'dead';
+  if(am===0) return 'win';
+  if(am>=others) return 'lose';
+  return null;
+}
+function dawn(){
+  closeModal(); clearSel(); focusOverview(); G.phase='dawn';
+  const shooter=pick(aliveNPC().filter(c=>c.role==='mafia'));
+  const pool=aliveNPC().filter(c=>c.role!=='mafia').map(c=>c.id); if(G.night>1) pool.push('P');
+  const victim=pick(pool);
+  const doc=G.chars.find(c=>c.role==='doctor'&&c.state==='alive');
+  const saved=doc?pick(aliveNPC().map(c=>c.id).concat('P')):null;
+  const survived=victim===saved;
+  setMood(0); setChip('صبحِ روز '+FA(G.night),false); boom();
+  let s1, v=null;
+  if(survived){ s1='<p>در تاریکی صدای شلیک آمد، اما صبح همه نفس می‌کشند. کسی از مرگ برگردانده شده است.</p>'; aliveNPC().forEach(c=>setFx(c,'gasp',1.4)); }
+  else if(victim==='P'){ G.player.alive=false; return endGame('dead'); }
+  else {
+    v=byId(victim); killChar(v); s1=`<p>صبح شد. <b>${v.name}</b> روی میز افتاده و دیگر نفس نمی‌کشد. ${roleReveal(v)}</p>`;
+    aliveNPC().forEach(c=>setFx(c,G.rel[c.id][v.id]>=65?'grief':'gasp',2.6));
+    G.gaze={speaker:v.id,until:performance.now()+3800};
+  }
+  const res=check(); if(res) return endGame(res,s1);
+  const clue=makeClue(shooter); G.clues.push(clue);
+  G.morning=`${s1}<p>شاهد: «مهاجم ${clue.text}.»</p>`;
+  G.q=3; G.chars.forEach(c=>c.asked={a:false,s:false});
+  computeSuspects();
+  sheetSet(s1,[{t:'شاهد را بشنو',k:'primary',fn:()=>{
+    sheetSet(`<p>شاهدی که از پشت پنجره بود می‌گوید:</p><div class="say">«مهاجم ${clue.text}.»</div><p class="dim">این را با ظاهر میهمانان مقایسه کن. در دفترچه ثبت شد.</p>`,
+      [{t:'به گفتگوی میز گوش بده',k:'primary',fn:()=>startTalk(buildTalk(v,clue),dayMain)}]);
+  }}]);
+}
+function computeSuspects(){
+  const al=aliveNPC(), lt=G.clues[G.clues.length-1];
+  const test=lt?TESTS.find(t=>t.id===lt.testId):null;
+  const matches=o=>test?test.f(o)===lt.pol:false;
+  const nonM=al.filter(o=>o.role!=='mafia');
+  const common=nonM.length?wpick(nonM,o=>1+(matches(o)?.5:0)):null;
+  al.forEach(c=>{
+    const others=al.filter(o=>o!==c); if(!others.length){ c.suspect=null; return; }
+    const dis=o=>1.4-G.rel[c.id][o.id]/100;
+    if(c.role==='mafia'){
+      if(common&&common!==c&&Math.random()<.75) c.suspect=common.id;
+      else c.suspect=wpick(others,o=>(o.role==='mafia'?.05:1)*dis(o)).id;
+    } else c.suspect=wpick(others,o=>(1+(o.role==='mafia'?.9:0)+(matches(o)?.7:0))*dis(o)).id;
+  });
+}
+
+/* ============ گفتگوی میز و واکنش‌ها ============ */
+let bubble=null, bubbleTimer=0;
+function setFx(c,type,t){ c.fx={type,t}; }
+function showBubble(c,text,ms){
+  hideBubble();
+  const el=document.createElement('div'); el.className='bub'; el.textContent=text; $('#bubbles').appendChild(el);
+  bubble={el,c};
+  if(ms) bubbleTimer=setTimeout(hideBubble,ms);
+}
+function hideBubble(){ clearTimeout(bubbleTimer); if(bubble){ bubble.el.remove(); bubble=null; } }
+function speakLine(L){
+  const c=byId(L.who); showBubble(c,L.text);
+  c.speak=clamp(L.text.length*.06,2,6);
+  G.gaze={speaker:c.id,at:L.at!=null?L.at:null};
+  if(L.nerv) c.nerv=3;
+  if(L.at!=null){ const t=byId(L.at); if(t&&t.state==='alive') setFx(t,'flinch',1.4); }
+}
+function startTalk(lines,done,phase){
+  G.phase=phase||'talk'; clearSel(); focusOverview();
+  const my=++G.talkId; let skip=false;
+  sheetSet('<div id="tl"></div>',[{t:'رد کردن گفتگو',fn:()=>{ skip=true; }}]);
+  const tl=sheet.querySelector('#tl');
+  const render=L=>L.narr?`<p class="dim">${L.text}</p>`:`<p><b>${byId(L.who).name}:</b> «${L.text}»${L.cue?`<br><span class="cue">${L.cue}</span>`:''}</p>`;
+  const wait=async ms=>{ const t0=performance.now(); while(performance.now()-t0<ms&&!skip&&G.talkId===my) await sleep(80); };
+  (async()=>{
+    for(const L of lines){
+      if(skip||G.talkId!==my) break;
+      tl.insertAdjacentHTML('beforeend',render(L)); sheet.scrollTop=sheet.scrollHeight;
+      if(!L.narr) speakLine(L);
+      await wait(Math.max(2300,L.text.length*62));
+    }
+    if(G.talkId!==my) return;
+    hideBubble(); G.gaze=null;
+    const html=lines.map(render).join('');
+    G.talkLog.push(html);
+    sheetSet(html,[{t:'ادامه',k:'primary',fn:done}]);
+  })();
+}
+function buildTalk(v,clue){
+  const al=shuffle(aliveNPC()), L=[];
+  const a=al[0];
+  L.push({who:a.id,text:v?say(a,'grief',{v:v.name}):pick(['شکر خدا کسی کشته نشد؛ ولی یکی از ما هدف بود، این را فراموش نکنید.','عجیب است که امروز سالم بیدار شدیم... خدا کند ادامه پیدا کند.'])});
+  const b=al.find(x=>x!==a)||a;
+  L.push({who:b.id,text:say(b,'clue',{x:clue.text})});
+  const cand=al.filter(x=>x.suspect!=null&&byId(x.suspect).state==='alive');
+  if(cand.length){
+    const acc=wpick(cand,x=>.4+x.p.temper+(x.role==='mafia'?.3:0)), tg=byId(acc.suspect);
+    const nv=Math.random()<nervProb(acc,'neutral')*.6;
+    L.push({who:acc.id,text:say(acc,'accuse',{t:tg.name}),at:tg.id,nerv:nv,cue:nv?pick(CUE_N):null});
+    const tn=Math.random()<nervProb(tg,'neutral');
+    L.push({who:tg.id,text:say(tg,'defend'),at:acc.id,nerv:tn,cue:tn?pick(CUE_N):pick(CUE_C)});
+    G.rel[tg.id][acc.id]=Math.max(0,G.rel[tg.id][acc.id]-15);
+    const sup=al.find(x=>x!==acc&&x!==tg&&((G.rel[x.id][tg.id]>=65&&Math.random()<.7)||(x.role==='mafia'&&tg.role==='mafia'&&Math.random()<.4)));
+    if(sup) L.push({who:sup.id,text:pick([`${tg.name} را من می‌شناسم؛ اهل این کارها نیست.`,`این اتهام به ${tg.name} بی‌انصافی است.`,`بس کنید؛ ${tg.name} این کار را نمی‌کند.`]),at:acc.id});
+    else { const ag=al.find(x=>x!==acc&&x!==tg&&x.suspect===tg.id); if(ag) L.push({who:ag.id,text:`من هم با ${acc.name} موافقم؛ ${tg.name} باید توضیح بدهد.`,at:tg.id}); }
+  }
+  return L;
+}
+
+/* ============ رأی‌گیری ============ */
+function showVote(){
+  G.phase='vote'; clearSel(); focusOverview();
+  const al=aliveNPC();
+  sheetSet('<p>وقت رأی‌گیری است. رأی تو <b>دو برابر</b> حساب می‌شود. چه کسی را از میز کنار می‌گذاری؟</p>',[
+    ...al.map(c=>({t:c.name,fn:()=>resolveVote(c.id)})),
+    {t:'رأی ممتنع',fn:()=>resolveVote(null)},
+    {t:'بازگشت',fn:dayMain}
+  ]);
+}
+function resolveVote(pv){
+  const al=aliveNPC(), tally={}; let followers=0;
+  al.forEach(c=>{
+    let t=c.suspect;
+    if(c.role!=='mafia'&&pv!=null&&pv!==c.id&&c.ptrust>=65&&Math.random()<.55){ t=pv; followers++; }
+    else if(t==null||byId(t).state!=='alive'||(c.role!=='mafia'&&Math.random()<.12)) t=pick(al.filter(o=>o!==c)).id;
+    tally[t]=(tally[t]||0)+1;
+  });
+  if(pv!=null) tally[pv]=(tally[pv]||0)+2;
+  const arr=Object.entries(tally).map(([k,v])=>({id:+k,v})).sort((x,y)=>y.v-x.v);
+  const top=arr.filter(x=>x.v===arr[0].v), tie=top.length>1, out=byId(pick(top).id);
+  const lines=[];
+  lines.push({narr:true,text:arr.map(x=>`${byId(x.id).name}: ${FA(x.v)} رأی`).join('، ')+'.'+(tie?' رأی‌ها مساوی شد و قرعه افتاد.':'')});
+  if(followers>0) lines.push({narr:true,text:`${FA(followers)} نفر به قضاوت تو اعتماد کردند و همراهت رأی دادند.`});
+  lines.push({who:out.id,text:say(out,'farewell'),cue:pick(out.role==='mafia'?CUE_C:CUE_N),at:null});
+  lines.push({narr:true,text:`${out.name} از میز کنار گذاشته شد. ${roleReveal(out)}`});
+  const rest=al.filter(o=>o!==out), friend=rest.find(o=>G.rel[o.id][out.id]>=65);
+  if(out.role==='mafia'){
+    const a=pick(rest); lines.push({who:a.id,text:pick(['پس درست حدس زده بودیم!','خدا را شکر. یکی‌شان کمتر شد.','دیدید؟ گفتم یک جای کار می‌لنگد.'])});
+    if(friend&&friend!==a) lines.push({who:friend.id,text:pick(['باورم نمی‌شود... من او را آدم دیگری می‌دانستم.','چقدر راحت گول خوردم...'])});
+  } else {
+    const a=friend||pick(rest); lines.push({who:a.id,text:pick(['دیدید؟! یک آدم بی‌گناه را از ترس بیرون کردیم.','این اشتباه بود. به خدا این یک اشتباه بود.','چه کرده‌ایم...'])});
+  }
+  setFx(out,'shake',4);
+  rest.forEach(c=>setFx(c,G.rel[c.id][out.id]>=65?'grief':'gasp',3));
+  startTalk(lines,()=>{
+    out.state='out'; refreshTag(out); hideBubble();
+    G.chars.forEach(c=>{ if(c.state==='alive') c.ptrust=clamp(c.ptrust+(out.role==='mafia'?10:-10),0,100); });
+    const res=check(); if(res) return endGame(res,'');
+    sheetSet('<p class="dim">عمارت در سکوتی سنگین فرو می‌رود. شب نزدیک است.</p>',[{t:'شب فرا می‌رسد',k:'primary',fn:()=>{ G.night++; beginNight(); }}]);
+  },'votetalk');
+}
+
+/* ============ دفترچه ============ */
+function openNotebook(){
+  let h='<h3>دفترچهٔ کارآگاه</h3><h4>سرنخ‌های شاهد</h4>';
+  h+=G.clues.length?'<ol>'+G.clues.map(c=>`<li>شب ${FA(c.night)}: مهاجم ${c.text}.</li>`).join('')+'</ol>':'<p class="dim">هنوز شاهدی حرف نزده است.</p>';
+  h+='<h4>میهمانان</h4>';
+  G.chars.forEach(c=>{ h+=`<div class="guest ${c.state!=='alive'?'gone':''}"><div><b>${c.name}</b> ${badge(c)}</div><div>${bio(c)}</div><div>${chips(c)}</div>${c.notes.map(n=>`<div class="note">${n}</div>`).join('')}</div>`; });
+  if(G.talkLog.length) h+='<h4>آخرین گفتگوی میز</h4>'+G.talkLog[G.talkLog.length-1];
+  h+='<div class="row"><button class="btn primary" id="nbClose" type="button">بستن</button></div>';
+  const card=modal(h); card.querySelector('#nbClose').onclick=closeModal;
+}
+$('#nbBtn').onclick=()=>{ if(G&&G.phase!=='intro'&&G.phase!=='end') openNotebook(); };
+
+/* ============ معماها ============ */
+function startPuzzle(c){
+  const kind=pick(['seq','riddle','candles']);
+  const card=modal(`<h3>قفل پروندهٔ ${c.name}</h3><div id="pz"></div>`), pz=card.querySelector('#pz');
+  let live=true; const done=ok=>{ live=false; closeModal(); puzzleResult(c,ok); };
+  const optsUI=(opts,right,html)=>{
+    pz.innerHTML=html+'<div class="opts"></div>';
+    const box=pz.querySelector('.opts');
+    shuffle(opts).forEach(o=>{ const b=document.createElement('button'); b.type='button'; b.className='btn'; b.textContent=typeof o==='number'?FA(o):o; if(typeof o!=='number') b.style.fontSize='16px'; b.onclick=()=>done(o===right); box.appendChild(b); });
+  };
+  if(kind==='seq'){
+    const gens=[
+      ()=>{ const a=rnd(2,9),d=rnd(2,7); return {s:[a,a+d,a+2*d,a+3*d],ans:a+4*d}; },
+      ()=>{ const a=rnd(1,4); return {s:[a,a*2,a*4,a*8],ans:a*16}; },
+      ()=>{ const a=rnd(1,5); return {s:[a,a+1,a+3,a+6],ans:a+10}; },
+      ()=>({s:[1,4,9,16],ans:25})
+    ];
+    const g=pick(gens)(); const set=new Set([g.ans]); while(set.size<3) set.add(g.ans+rnd(-4,4)||g.ans+5);
+    optsUI([...set],g.ans,`<p>عدد بعدیِ الگو کدام است؟</p><div class="seq">${g.s.map(FA).join(' ، ')} ، ؟</div>`);
+  } else if(kind==='riddle'){
+    const bank=[
+      ['هرچه بیشتر از آن برداری، بزرگ‌تر می‌شود. چیست؟','چاله',['کوه','دریا']],
+      ['پر از سوراخ است، ولی آب را نگه می‌دارد.','اسفنج',['الک','سبد']],
+      ['دست دارد، اما نمی‌تواند دست بدهد.','ساعت',['دستکش','در']],
+      ['هرچه بیشتر خشک می‌کند، خودش خیس‌تر می‌شود.','حوله',['آفتاب','نان']],
+      ['شب‌ها بی‌دعوت می‌آیند و صبح بی‌خداحافظی می‌روند.','ستاره‌ها',['رؤیاها','سایه‌ها']]
+    ];
+    const r=pick(bank); optsUI([r[1],...r[2]],r[1],`<p>${r[0]}</p>`);
+  } else {
+    const cols=['#c0392b','#e2a94b','#3f7fbf','#4a9a62'], seq=Array.from({length:4},()=>rnd(0,3));
+    pz.innerHTML=`<p>شمع‌ها به ترتیبی روشن می‌شوند. همان ترتیب را تکرار کن.</p>
+      <div class="candles">${cols.map((c,i)=>`<button type="button" class="cd" data-i="${i}" style="--c:${c}" aria-label="شمع ${FA(i+1)}"></button>`).join('')}</div>
+      <div class="row"><button class="btn" id="rp" type="button">نمایش دوباره (یک‌بار)</button></div>`;
+    const btns=[...pz.querySelectorAll('.cd')]; let step=0,locked=true,replays=1;
+    const flash=async(i,ms)=>{ btns[i].classList.add('lit'); await sleep(ms); btns[i].classList.remove('lit'); };
+    const play=async()=>{ locked=true; step=0; await sleep(500); for(const i of seq){ if(!live) return; await flash(i,520); await sleep(220); } locked=false; };
+    btns.forEach((b,i)=>b.onclick=async()=>{ if(locked||!live) return; flash(i,200); if(i!==seq[step]) return done(false); step++; if(step===seq.length) { await sleep(250); done(true); } });
+    pz.querySelector('#rp').onclick=e=>{ if(replays<=0||locked) return; replays--; e.target.disabled=true; play(); };
+    play();
+  }
+}
+
+/* ============ پایان بازی ============ */
+function endGame(kind,pre=''){
+  G.phase='end'; closeModal(); sheet.classList.remove('on'); sheet.innerHTML=''; setMood(kind==='win'?0:1);
+  G.chars.forEach(c=>{ if(c.role==='mafia'){ c.ring.material.color.set(0xb02a3c); c.ring.material.opacity=.95; } });
+  const T={win:['پیروزی','هر دو مافیا افشا شدند. صبحِ بی‌خون‌ریزی بالاخره رسید و عمارت نفس کشید.'],
+           lose:['شکست','مافیا به تعداد بقیه رسید. دیگر کسی نیست که جلویشان را بگیرد.'],
+           dead:['شکست','گلوله‌ای از تاریکی آمد. کارآگاه دیگر هیچ پرونده‌ای باز نمی‌کند.']}[kind];
+  const rows=G.chars.map(c=>`<div class="guest"><b>${c.name}</b> — ${ROLE_FA[c.role]} <span class="dim">(${c.state==='alive'?'زنده':c.state==='dead'?'کشته شد':'کنار گذاشته شد'})</span></div>`).join('');
+  const e=$('#end'); e.innerHTML=`<div class="card"><h2 class="${kind==='win'?'win':'lose'}">${T[0]}</h2>${pre}<p>${T[1]}</p><h4 style="color:var(--moon);margin:12px 0 2px">نقش‌ها</h4>${rows}<div class="row"><button class="btn primary" id="again" type="button">بازی دوباره</button></div></div>`;
+  e.classList.add('on');
+  e.querySelector('#again').onclick=()=>{ e.classList.remove('on'); newGame(); setMood(1); beginNight(); };
+}
+
+/* ============ شروع و راهنما ============ */
+const HOW=`<h3>راهنمای بازی</h3>
+<ul>
+<li><b>نقش‌ها:</b> هشت نفر سر میزند: دو مافیا، یک دکتر ناشناس، پنج شهروند (یکی از آن‌ها تویی، کارآگاه).</li>
+<li><b>شب:</b> می‌توانی پروندهٔ یکی را باز کنی. قفل معما دارد؛ اگر حل کنی، نقش واقعی او را می‌فهمی.</li>
+<li><b>صبح:</b> مافیا یک نفر را کشته است. شاهد می‌گوید مهاجم کلاه داشت، عینک داشت، پالتویش چه رنگی بود... همین را با ظاهر میهمانان روی میز تطبیق بده.</li>
+<li><b>روز:</b> سه پرسش داری. اضطراب و جواب‌ها را بسنج؛ مافیا بیشتر دست‌پاچه می‌شود، ولی همیشه نه.</li>
+<li><b>رأی‌گیری:</b> یک نفر را کنار بگذار. رأی تو دو برابر است.</li>
+<li><b>برد و باخت:</b> هر دو مافیا را پیدا کن. اگر تعدادشان به بقیه برسد یا کشته شوی، می‌بازی.</li>
+<li>برای دیدن اطراف، صحنه را بکش. برای انتخاب، روی شخص یا اسمش بزن.</li>
+</ul>
+<div class="row"><button class="btn primary" id="hc" type="button">فهمیدم</button></div>`;
+$('#howBtn').onclick=()=>{ const c=modal(HOW); c.querySelector('#hc').onclick=closeModal; };
+$('#creatorBtn').onclick=()=>{
+  const c=modal('<h3>دربارهٔ سازنده</h3><div id="ct"></div><div class="row" id="cr"></div><p class="dim" id="cn"></p><div class="row"><button class="btn" id="cc" type="button">بستن</button></div>');
+  const ct=c.querySelector('#ct');
+  String(CONFIG.creatorText||'').split(/\n\s*\n/).forEach(t=>{ const p=document.createElement('p'); p.style.whiteSpace='pre-line'; p.textContent=t.trim(); ct.appendChild(p); });
+  const cr=c.querySelector('#cr');
+  if(CONFIG.contactUrl){
+    const a=document.createElement('a'); a.className='btn primary link'; a.textContent='ارتباط با ما'; a.href=CONFIG.contactUrl; a.target='_blank'; a.rel='noopener noreferrer'; cr.appendChild(a);
+  } else {
+    const b=document.createElement('button'); b.type='button'; b.className='btn primary'; b.textContent='ارتباط با ما';
+    b.onclick=()=>{ c.querySelector('#cn').textContent='لینک ارتباطی هنوز تنظیم نشده است.'; }; cr.appendChild(b);
+  }
+  c.querySelector('#cc').onclick=closeModal;
+};
+$('#startBtn').onclick=()=>{
+  $('#intro').classList.add('off'); introSpin=false; G.phase='night';
+  focusOverview(); setMood(1); beginNight();
+};
+
+/* ============ تعامل با بوم ============ */
+let drag=null; const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+canvas.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,moved:false}; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8) drag.moved=true;
+  if(drag.moved){
+    cam.t.az-=(e.clientX-drag.lx)*.006; cam.t.el=Math.min(1.15,Math.max(.25,cam.t.el+(e.clientY-drag.ly)*.004));
+  }
+  drag.lx=e.clientX; drag.ly=e.clientY;
+});
+canvas.addEventListener('pointerup',e=>{
+  if(drag&&!drag.moved&&G){
+    ndc.set((e.clientX/W)*2-1,-(e.clientY/H)*2+1); ray.setFromCamera(ndc,camera);
+    const hits=ray.intersectObjects(G.chars.filter(c=>c.vis>.5).map(c=>c.group),true);
+    const h=hits.find(x=>x.object.userData.cid!=null); if(h) selectChar(h.object.userData.cid);
+  }
+  drag=null;
+});
+canvas.addEventListener('pointercancel',()=>{ drag=null; });
+
+/* ============ حلقهٔ رندر ============ */
+const clock=new THREE.Clock(), v3=new THREE.Vector3(), v3c=new THREE.Vector3();
+function frame(){
+  requestAnimationFrame(frame);
+  const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
+  moodCur+=(moodT-moodCur)*Math.min(1,dt*1.6);
+  if(!reduce&&moodCur>.7&&Math.random()<dt*.1) ltn=Math.max(ltn,.8);
+  ltn*=Math.pow(.02,dt); if(ltn<.01) ltn=0; flick=Math.max(0,flick-dt*.7); shake=Math.max(0,shake-dt*1.4);
+  applyMood(moodCur,t);
+
+  if(introSpin) cam.t.az=Math.sin(t*.18)*.7;
+  const k=Math.min(1,dt*3.2);
+  cam.az+=angDiff(cam.az,cam.t.az)*k;
+  for(const p of ['el','dist','tx','ty','tz']) cam[p]+=(cam.t[p]-cam[p])*k;
+  const ce=Math.cos(cam.el), sx=(Math.random()-.5)*shake*.12, sy=(Math.random()-.5)*shake*.12;
+  camera.position.set(cam.tx+cam.dist*Math.sin(cam.az)*ce+sx,cam.ty+cam.dist*Math.sin(cam.el)+sy,cam.tz+cam.dist*Math.cos(cam.az)*ce);
+  camera.lookAt(cam.tx,cam.ty,cam.tz);
+  viewOffT=sheet.classList.contains('on')?sheet.offsetHeight*.5:(introSpin?H*.18:0);
+  viewOff+=(viewOffT-viewOff)*Math.min(1,dt*5);
+  camera.setViewOffset(W,H,0,Math.round(viewOff),W,H);
+
+  lampG.rotation.z=Math.sin(t*.7)*.012; lampG.rotation.x=Math.cos(t*.5)*.01;
+  const fs=1+Math.sin(t*14)*.12+Math.random()*.1;
+  centerCandle.userData.flame.scale.set(fs,1.7*fs,fs);
+  for(let i=0;i<DN;i++){ dpos[i*3+1]+=dt*.08; dpos[i*3]+=Math.sin(t*.4+i)*dt*.02; if(dpos[i*3+1]>5.2) dpos[i*3+1]=.5; }
+  dgeo.attributes.position.needsUpdate=true;
+
+  if(G){
+    const night=moodCur>.5, now=performance.now();
+    if(G.gaze&&G.gaze.until&&now>G.gaze.until) G.gaze=null;
+    G.chars.forEach(c=>{
+      const u=c.upper, alive=c.state==='alive';
+      let lean=alive?(night?.3:Math.sin(t*1.1+c.id)*.015):.8;
+      let hx=alive?(night?.35:Math.sin(t*.8+c.id*2)*.03):.55, hy=0, hz=0;
+      if(alive&&!night) hy=Math.sin(t*.35+c.id*1.7)*.22;
+      if(alive&&!night&&G.gaze){
+        const sp=byId(G.gaze.speaker); let has=false;
+        if(c.id===G.gaze.speaker){
+          if(G.gaze.player){ v3c.copy(camera.position); has=true; }
+          else if(G.gaze.at!=null){ byId(G.gaze.at).head.getWorldPosition(v3c); has=true; }
+        } else if(sp){ sp.head.getWorldPosition(v3c); has=true; }
+        if(has){ const loc=u.worldToLocal(v3c); hy=clamp(Math.atan2(loc.x,loc.z),-1.1,1.1); }
+      }
+      if(c.fx.t>0){
+        c.fx.t-=dt;
+        switch(c.fx.type){
+          case 'gasp': lean-=.22; hx-=.2; break;
+          case 'grief': lean+=.3; hx+=.45; break;
+          case 'shake': hy+=Math.sin(t*16)*.35; break;
+          case 'flinch': lean-=.12; hx-=.08; hz+=Math.sin(t*20)*.03; break;
+        }
+      }
+      if(c.speak>0){ c.speak-=dt; hx+=Math.sin(t*11)*.05; hy+=Math.sin(t*3)*.08; }
+      if(c.nerv>0){ c.nerv-=dt; hz+=Math.sin(t*30)*.025; hx+=Math.sin(t*26)*.02; }
+      if(c.angry>0) c.angry-=dt;
+      const k2=Math.min(1,dt*3);
+      u.rotation.x+=(lean-u.rotation.x)*Math.min(1,dt*2.5);
+      c.head.rotation.x+=(hx-c.head.rotation.x)*k2; c.head.rotation.y+=(hy-c.head.rotation.y)*k2; c.head.rotation.z=hz;
+      if(alive&&c.arms){
+        c.arms.forEach((a,i)=>{
+          let rx=-.9, rz=(i?1:-1)*.1;
+          if(c.speak>0&&!night) rx-=(.35+.35*Math.sin(t*5+i*1.7+c.id))*(i===0?.9:.55);
+          if(c.angry>0) rx-=.5;
+          if(c.nerv>0){ rx+=Math.sin(t*38+i*2)*.04; rz+=Math.sin(t*33+i)*.03; }
+          a.rotation.x+=(rx-a.rotation.x)*Math.min(1,dt*8); a.rotation.z=rz;
+        });
+      }
+      const es=alive&&!night?1:.12; c.eyeS+=(es-c.eyeS)*Math.min(1,dt*6); c.eyes.forEach(e=>e.scale.y=c.eyeS);
+      if(c.state==='out'){ c.vis=Math.max(0,c.vis-dt*.9); c.group.scale.setScalar(Math.max(.001,c.sc*c.vis)); c.group.visible=c.vis>.02; }
+      if(c.ring.material.opacity>0&&G.sel===c.id) c.ring.material.opacity=.6+Math.sin(t*4)*.25;
+      if(c.candle){ const f=c.candle.userData.flame, s2=1+Math.sin(t*13+c.id)*.15+Math.random()*.08; f.scale.set(s2,1.7*s2,s2); }
+      c.head.getWorldPosition(v3); v3.y+=.62; v3.project(camera);
+      const show=v3.z<1&&c.vis>.3&&G.phase!=='intro';
+      c.tag.style.display=show?'flex':'none';
+      if(show){ c.tag.style.left=((v3.x*.5+.5)*W)+'px'; c.tag.style.top=((-v3.y*.5+.5)*H)+'px'; }
+    });
+    if(bubble){
+      bubble.c.head.getWorldPosition(v3); v3.y+=.62; v3.project(camera);
+      if(v3.z<1){ bubble.el.style.display='block'; bubble.el.style.left=clamp((v3.x*.5+.5)*W,125,W-125)+'px'; bubble.el.style.top=((-v3.y*.5+.5)*H-30)+'px'; }
+      else bubble.el.style.display='none';
+    }
+  }
+  renderer.render(scene,camera);
+}
+
+/* راه‌اندازی */
+resize(); newGame(); G.phase='intro'; G.chars.forEach(c=>c.tag.style.display='none');
+cam.az=cam.t.az=0; cam.dist=cam.t.dist=overviewDist(); setMood(1); moodCur=.6;
+$('#phaseChip').textContent='آماده';
+frame();
+})();
+</script>
+</body>
+</html>
